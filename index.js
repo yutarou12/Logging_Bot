@@ -1,7 +1,9 @@
 const Discord = require('discord.js');
 const client = new Discord.Client({ws : { intents: Discord.Intents.ALL } });
-const fs = require('fs');
-const config = require('./config.json');
+const fs = require('fs'),
+    config = require('./config.json'),
+    SQLite = require("better-sqlite3"),
+    DB = new SQLite("../data/db.sqlite");
 
 client.commands = new Discord.Collection();
 const commandFiles = fs.readdirSync('./commands').filter(file => file.endsWith('.js'));
@@ -16,8 +18,8 @@ global.colors = {
     red: 0xf04747
 }
 
-client.once('ready', async () => {
-    await client.user.setActivity(`@${client.user.username} help`, { type: 'PLAYING' })
+client.on('ready', async () => {
+    client.user.setActivity(`@${client.user.username} help`, { type: 'PLAYING' })
 
     global.helps = client.commands.filter( command => !command.hidden ).map( command => {
         if (command.hidden) return;
@@ -28,6 +30,18 @@ client.once('ready', async () => {
             description: command.description
         }
     });
+
+    //START データベース
+    const table = DB.prepare("SELECT count(*) FROM sqlite_master WHERE type='table' AND name='logs';").get();
+    if (!table['count(*)']) {
+        DB.prepare("CREATE TABLE logs (guild_id TEXT PRIMARY KEY, channel_id TEXT, guild_m_add TEXT, guild_m_remove TEXT, message_delete TEXT, message_edit TEXT, role_cre TEXT, role_del TEXT, channel_cre TEXT, channel_del TEXT, function TEXT,);").run();
+        DB.prepare("CREATE UNIQUE INDEX idx_logs_id ON logs;").run();
+        DB.pragma("synchronous = 1");
+        DB.pragma("journal_mode = wal");
+    }
+    client.getLog = DB.prepare("SELECT * FROM logs WHERE guild_id = ?");
+    client.setLog = DB.prepare("INSERT OR REPLACE INTO logs (guild_id, channel_id, guild_m_add, guild_m_remove, message_delete, message_edit, role_cre, role_del, channel_cre, channel_del, function) VALUES (@guild_id, @channel_id, @guild_m_add, @guild_m_remove, @message_delete, @message_edit, @role_cre, @role_del, @channel_cre, @channel_del, @function);");
+    //END データベース
 
     console.log('準備完了');
 });
@@ -108,6 +122,15 @@ client.on('message', async message => {
         });
     }
 
+});
+
+fs.readdir(`./events/`, (err, files) => {
+    if (err) return console.error(err);
+    files.forEach(file => {
+        let eventFunction = require(`./events/${file}`);
+        let eventName = file.split(".")[0];
+        client.on(eventName, (...args) => eventFunction.run(client, ...args));
+    });
 });
 
 client.login(config.TOKEN);

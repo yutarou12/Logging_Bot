@@ -34,13 +34,13 @@ client.on('ready', async () => {
     //START データベース
     const table = DB.prepare("SELECT count(*) FROM sqlite_master WHERE type='table' AND name='logs';").get();
     if (!table['count(*)']) {
-        DB.prepare("CREATE TABLE logs (guild_id TEXT PRIMARY KEY, channel_id TEXT, guild_m_add TEXT, guild_m_remove TEXT, message_delete TEXT, message_edit TEXT, role_cre TEXT, role_del TEXT, channel_cre TEXT, channel_del TEXT, function TEXT,);").run();
+        DB.prepare("CREATE TABLE logs (guild_id TEXT PRIMARY KEY, channel_id TEXT, guild_m_add TEXT, guild_m_remove TEXT, message_delete TEXT, message_edit TEXT, role_cre TEXT, role_del TEXT, channel_cre TEXT, channel_del TEXT, emoji_cre TEXT, emoji_del TEXT, invite_cre TEXT, invite_del TEXT, m_ban_add TEXT, m_ban_del TEXT, function TEXT,);").run();
         DB.prepare("CREATE UNIQUE INDEX idx_logs_id ON logs;").run();
         DB.pragma("synchronous = 1");
         DB.pragma("journal_mode = wal");
     }
     client.getLog = DB.prepare("SELECT * FROM logs WHERE guild_id = ?");
-    client.setLog = DB.prepare("INSERT OR REPLACE INTO logs (guild_id, channel_id, guild_m_add, guild_m_remove, message_delete, message_edit, role_cre, role_del, channel_cre, channel_del, function) VALUES (@guild_id, @channel_id, @guild_m_add, @guild_m_remove, @message_delete, @message_edit, @role_cre, @role_del, @channel_cre, @channel_del, @function);");
+    client.setLog = DB.prepare("INSERT OR REPLACE INTO logs (guild_id, channel_id, guild_m_add, guild_m_remove, message_delete, message_edit, role_cre, role_del, channel_cre, channel_del, emoji_cre, emoji_del, invite_cre, invite_del, m_ban_add, m_ban_del, function) VALUES (@guild_id, @channel_id, @guild_m_add, @guild_m_remove, @message_delete, @message_edit, @role_cre, @role_del, @channel_cre, @channel_del, @emoji_cre, @emoji_del, @invite_cre, @invite_del, @m_ban_add, @m_ban_del, @function);");
     //END データベース
 
     console.log('準備完了');

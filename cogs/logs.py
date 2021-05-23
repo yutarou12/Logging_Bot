@@ -118,6 +118,22 @@ class Log(commands.Cog):
             role_add_log.set_footer(text=self.datetime_now)
             return await channel.send(embed=role_add_log)
 
+    @commands.Cog.listener()
+    async def on_guild_role_delete(self, role):
+        channel = await self.bot.fetch_channel(self.log_channel_id)
+
+        if channel:
+            role_del_log = discord.Embed(title='役職削除ログ', description=f'役職: {role.name} が削除されました',
+                                         color=role.color)
+            async for entry in role.guild.audit_logs(limit=1, action=discord.AuditLogAction.role_delete):
+                if entry:
+                    role_del_log.add_field(name='削除者', value=f'`{entry.user}`', inline=False)
+                    role_del_log.add_field(name='役職名', value=f'`{role.name}`', inline=False)
+                    role_del_log.add_field(name='権限', value=f'`{role.permissions.value}`', inline=False)
+                    role_del_log.add_field(name='ID', value=f'`{role.id}`', inline=False)
+            role_del_log.set_footer(text=self.datetime_now)
+            return await channel.send(embed=role_del_log)
+
 
 def setup(bot):
     bot.add_cog(Log(bot))

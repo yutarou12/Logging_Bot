@@ -66,7 +66,7 @@ class Log(commands.Cog):
                                         description=f'{del_msg_ch.mention} にて、メッセージが削除されました')
                 msg_log.set_footer(text=self.datetime_now)
                 if message:
-                    async for entry in guild.audit_logs(limit=1):
+                    async for entry in guild.audit_logs(limit=1, action=discord.AuditLogAction.message_delete):
                         if int(entry.created_at.minute) - int(datetime.now().astimezone(timezone("UTC")).minute) < 1.5:
                             msg_log.add_field(name='メッセージ削除者', value=f'> `{entry.user}`')
                     msg_log.add_field(name='メッセージ送信者', value=f'> `{message.author}`', inline=False)

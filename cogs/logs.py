@@ -113,9 +113,10 @@ class Log(commands.Cog):
             async for entry in role.guild.audit_logs(limit=1, action=discord.AuditLogAction.role_create):
                 if entry:
                     role_add_log.add_field(name='作成者', value=f'`{entry.user}`', inline=False)
-                    role_add_log.add_field(name='役職名', value=f'`{role.name}`', inline=False)
-                    role_add_log.add_field(name='ID', value=f'`{role.id}`', inline=False)
+            role_add_log.add_field(name='役職名', value=f'`{role.name}`', inline=False)
+            role_add_log.add_field(name='ID', value=f'`{role.id}`', inline=False)
             role_add_log.set_footer(text=self.datetime_now)
+
             return await channel.send(embed=role_add_log)
 
     @commands.Cog.listener()
@@ -128,10 +129,11 @@ class Log(commands.Cog):
             async for entry in role.guild.audit_logs(limit=1, action=discord.AuditLogAction.role_delete):
                 if entry:
                     role_del_log.add_field(name='削除者', value=f'`{entry.user}`', inline=False)
-                    role_del_log.add_field(name='役職名', value=f'`{role.name}`', inline=False)
-                    role_del_log.add_field(name='権限', value=f'`{role.permissions.value}`', inline=False)
-                    role_del_log.add_field(name='ID', value=f'`{role.id}`', inline=False)
+            role_del_log.add_field(name='役職名', value=f'`{role.name}`', inline=False)
+            role_del_log.add_field(name='権限', value=f'`{role.permissions.value}`', inline=False)
+            role_del_log.add_field(name='ID', value=f'`{role.id}`', inline=False)
             role_del_log.set_footer(text=self.datetime_now)
+
             return await channel.send(embed=role_del_log)
 
 

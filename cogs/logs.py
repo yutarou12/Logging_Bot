@@ -80,6 +80,29 @@ class Log(commands.Cog):
                     msg_log.add_field(name='メッセージ内容', value='キャッシュされていないため表示出来ません', inline=False)
                 return await channel.send(embed=msg_log)
 
+    @commands.Cog.listener()
+    async def on_message_edit(self, b_message, a_message):
+        channel = await self.bot.fetch_channel(self.log_channel_id)
+
+        if channel:
+            msg_edit_log = discord.Embed(title='メッセージ編集ログ',
+                                         description=f'{a_message.author.mention} が '
+                                                     f'{a_message.channel.mention} にて、メッセージを編集しました')
+            msg_edit_log.set_footer(text=self.datetime_now)
+            msg_edit_log.add_field(name='チャンネル',
+                                   value=f'{a_message.channel.mention}\n[メッセージリンク]({a_message.jump_url})',
+                                   inline=False)
+            if len(b_message.embeds) > 0:
+                msg_edit_log.add_field(name='編集前メッセージ', value='Embedメッセージ', inline=False)
+            else:
+                msg_edit_log.add_field(name='編集前メッセージ', value=f'{b_message.content}', inline=False)
+            if len(a_message.embeds) > 0:
+                msg_edit_log.add_field(name='編集後メッセージ', value='Embedメッセージ', inline=False)
+            else:
+                msg_edit_log.add_field(name='編集後メッセージ', value=f'{a_message.content}', inline=False)
+
+            return await channel.send(embed=msg_edit_log)
+
 
 def setup(bot):
     bot.add_cog(Log(bot))

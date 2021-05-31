@@ -136,6 +136,62 @@ class Log(commands.Cog):
 
             return await channel.send(embed=role_del_log)
 
+    @commands.Cog.listener()
+    async def on_guild_channel_create(self, ch):
+        channel = await self.bot.fetch_channel(self.log_channel_id)
+        ch_type = {
+            'text': 'テキスト',
+            'voice': 'ボイス',
+            'private': 'プライベート',
+            'category': 'カテゴリー',
+            'news': 'ニュース',
+            'store': 'ストア',
+            'stage_voice': 'ステージ'
+        }
+
+        if channel:
+            if ch.guild:
+                ch_add_log = discord.Embed(title='チャンネル作成ログ', description=f'チャンネル: {ch} が作成されました')
+                async for entry in ch.guild.audit_logs(limit=1, action=discord.AuditLogAction.channel_create):
+                    if entry:
+                        ch_add_log.add_field(name='作成者', value=f'`{entry.user}`', inline=False)
+                if ch.category:
+                    ch_add_log.add_field(name='カテゴリー名', value=f'`{ch.category.name}`', inline=True)
+                ch_add_log.add_field(name='ポジション', value=f'`{ch.position}`', inline=True)
+                ch_add_log.add_field(name='チャンネルタイプ', value=f'`{ch_type[str(ch.type)]}`', inline=True)
+                ch_add_log.add_field(name='ID', value=f'`{ch.id}`', inline=False)
+                ch_add_log.set_footer(text=self.datetime_now)
+
+                return await channel.send(embed=ch_add_log)
+
+    @commands.Cog.listener()
+    async def on_guild_channel_delete(self, ch):
+        channel = await self.bot.fetch_channel(self.log_channel_id)
+        ch_created = ch.created_at.astimezone(timezone("Asia/Tokyo")).strftime("%Y/%m/%d(%a) %H:%M:%S")
+        ch_type = {
+            'text': 'テキスト',
+            'voice': 'ボイス',
+            'private': 'プライベート',
+            'category': 'カテゴリー',
+            'news': 'ニュース',
+            'store': 'ストア',
+            'stage_voice': 'ステージ'
+        }
+        if channel:
+            if ch.guild:
+                ch_add_log = discord.Embed(title='チャンネル削除ログ', description=f'チャンネル: {ch.name} が削除されました')
+                async for entry in ch.guild.audit_logs(limit=1, action=discord.AuditLogAction.channel_delete):
+                    if entry:
+                        ch_add_log.add_field(name='作成者', value=f'`{entry.user}`', inline=False)
+                if ch.category:
+                    ch_add_log.add_field(name='カテゴリー名', value=f'`{ch.category.name}`', inline=True)
+                ch_add_log.add_field(name='ポジション', value=f'`{ch.position}`', inline=True)
+                ch_add_log.add_field(name='チャンネルタイプ', value=f'`{ch_type[str(ch.type)]}`', inline=True)
+                ch_add_log.add_field(name='作成日時', value=f'`{ch_created}`', inline=False)
+                ch_add_log.add_field(name='ID', value=f'`{ch.id}`', inline=False)
+                ch_add_log.set_footer(text=self.datetime_now)
+                return await channel.send(embed=ch_add_log)
+
 
 def setup(bot):
     bot.add_cog(Log(bot))
